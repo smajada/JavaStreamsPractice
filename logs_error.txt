@@ -1,0 +1,3 @@
+Error de lectura/escritura en el archivo.
+2023-05-20
+[LecturaEscrituraStreams.leerObjEscribirCons(LecturaEscrituraStreams.java:180), Main.main(Main.java:31)]
