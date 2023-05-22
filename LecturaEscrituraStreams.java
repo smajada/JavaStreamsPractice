@@ -22,99 +22,104 @@ public class LecturaEscrituraStreams {
     }
 
     public void leerEscribirByteByte() throws RutaInvalida {
-        try (FileInputStream lectura = new FileInputStream(pedirRuta("entrada"));
-             FileOutputStream salida = new FileOutputStream(pedirRuta("salida"))) {
-    
-            int c = 0;
+        try (FileInputStream entrada = new FileInputStream(pedirRuta("entrada"));
+                FileOutputStream salida = new FileOutputStream(pedirRuta("salida"))) {
+
+            int character = 0;
             int i = 0;
-    
+
+            //Escribimos Titulo
             salida.write(campos[i].getBytes());
-    
-            while (c != -1) {
-                c = lectura.read();
-                if (c != -1 && (char) c != '#' && (char) c != '{') {
-                    if ((char) c == '\n') {
-                        salida.write(' ');
-                    } else {
-                        salida.write(c);
-                    }
-                } else if ((char) c == '#') {
+
+            //Mientras no acabe el texto
+            while ((character = entrada.read()) != -1) {
+                //I ira de 0 a 7
+                int aumentarI = (i + 1) % 7;
+
+                if (character == '#') {
                     if (i == 3) {
                         salida.write(" minutos".getBytes());
                     }
-    
-                    i = (i + 1) % 7;
-    
+                    i = aumentarI;
                     salida.write(lineSeparator.getBytes());
                     salida.write(campos[i].getBytes());
-                } else if ((char) c == '{') {
-                    i = (i + 1) % 7;
+                } else if (character == '{') {
+                    i = aumentarI;
                     salida.write((lineSeparator + lineSeparator).getBytes());
+                } else {
+                    // Procesa el resto de caracteres
+                    if (character == '\n') {
+                        salida.write(' ');
+                    } else {
+                        salida.write(character);
+                    }
                 }
             }
         } catch (IOException e) {
             System.out.println("Error en la lectura o escritura: " + e.getMessage());
         }
     }
-    
 
     public void leerEscribirCarCar() throws RutaInvalida {
         try (FileReader entrada = new FileReader(pedirRuta("entrada"));
-             FileWriter salida = new FileWriter(pedirRuta("salida"))) {
-    
-            int c = 0;
+                FileWriter salida = new FileWriter(pedirRuta("salida"))) {
+
+            int character = 0;
             int i = 0;
-    
+
+            //Escribimos Titulo
             salida.write(campos[i]);
-    
-            while (c != -1) {
-                c = entrada.read();
-                if (c != -1 && c != '#' && c != '{') {
-                    if (c == '\n') {
-                        salida.write(' ');
-                    } else {
-                        salida.write(c);
-                    }
-                } else if (c == '#') {
+
+            //Mientras no acabe el texto
+            while ((character = entrada.read()) != -1) {
+                //I ira de 0 a 7
+                int aumentarI = (i + 1) % 7;
+
+                if (character == '#') {
                     if (i == 3) {
                         salida.write(" minutos");
                     }
-    
-                    i = (i + 1) % 7;
-    
+                    i = aumentarI;
                     salida.write(lineSeparator);
                     salida.write(campos[i]);
-                } else if (c == '{') {
-                    i = (i + 1) % 7;
-                    salida.write((lineSeparator + lineSeparator));
+                } else if (character == '{') {
+                    i = aumentarI;
+                    salida.write(lineSeparator + lineSeparator);
+                } else {
+                    // Process other characters according to your logic
+                    if (character == '\n') {
+                        salida.write(' ');
+                    } else {
+                        salida.write(character);
+                    }
                 }
             }
-    
+
         } catch (IOException e) {
             System.out.println("Error en la lectura o escritura: " + e.getMessage());
         }
     }
-    
 
     public void leerLineaEscribirObj() throws RutaInvalida {
         try {
             // Crear una lista de películas
             ArrayList<Pelicula> cartelera = new ArrayList<>();
-    
+
             // Leer el archivo de entrada
             String rutaEntrada = pedirRuta("entrada");
-            try (BufferedReader mibuffer = new BufferedReader(new FileReader(rutaEntrada))) {
-    
+            String rutaSalida = pedirRuta("salida");
+            try (BufferedReader mibuffer = new BufferedReader(new FileReader(rutaEntrada));
+                    ObjectOutputStream objectSalida = new ObjectOutputStream(new FileOutputStream(rutaSalida))) {
                 // Leer líneas del archivo y construir el texto completo
                 StringBuilder textoCompleto = new StringBuilder();
                 String linea;
                 while ((linea = mibuffer.readLine()) != null) {
                     textoCompleto.append(linea);
                 }
-    
+
                 // Dividir el texto en películas
                 String[] division = textoCompleto.toString().split("\\{");
-    
+
                 // Crear objetos de tipo película y agregarlos a la cartelera
                 for (String peliculaString : division) {
                     String[] atributos = peliculaString.split("#");
@@ -130,31 +135,26 @@ public class LecturaEscrituraStreams {
                         cartelera.add(pelicula);
                     }
                 }
-            }
-    
-            // Escribir en el archivo de salida
-            String rutaSalida = pedirRuta("salida");
-            try (BufferedWriter bufferWriter = new BufferedWriter(new FileWriter(rutaSalida))) {
                 for (Pelicula pelicula : cartelera) {
-                    bufferWriter.write(pelicula.toString());
-                    bufferWriter.newLine();
+                    objectSalida.writeObject(pelicula);
                 }
             }
+            // Escribir los objetos en el archivo de salida
         } catch (RutaInvalida e) {
             throw new RutaInvalida();
         } catch (IOException e) {
             System.out.println("Ruta no encontrada.");
         }
     }
-    
 
     public void leerObjEscribirCons() throws RutaInvalida {
         try {
             String rutaEntrada = pedirRuta("entrada");
             try (ObjectInputStream objetoEntrada = new ObjectInputStream(new FileInputStream(rutaEntrada))) {
+                
                 boolean endOfFile = false;
                 Pelicula pelicula;
-    
+
                 while (!endOfFile) {
                     try {
                         pelicula = (Pelicula) objetoEntrada.readObject();
@@ -172,19 +172,18 @@ public class LecturaEscrituraStreams {
             throw new RutaInvalida("Clase no encontrada.");
         }
     }
-    
 
     public void leerObjEscribirObj() throws RutaInvalida {
         try {
             String rutaEntrada = pedirRuta("entrada");
             String rutaSalida = pedirRuta("salida");
-    
+
             try (ObjectInputStream objetoEntrada = new ObjectInputStream(new FileInputStream(rutaEntrada));
                     ObjectOutputStream objetoSalida = new ObjectOutputStream(new FileOutputStream(rutaSalida))) {
-                
+
                 boolean endOfFile = false;
                 Pelicula pelicula;
-    
+
                 while (!endOfFile) {
                     try {
                         pelicula = (Pelicula) objetoEntrada.readObject();
@@ -202,7 +201,6 @@ public class LecturaEscrituraStreams {
             throw new RutaInvalida("Clase no encontrada.");
         }
     }
-    
 
     public void leerConsEscribirObj() throws RutaInvalida {
         try {
