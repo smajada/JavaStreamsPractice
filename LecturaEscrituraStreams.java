@@ -59,7 +59,7 @@ public class LecturaEscrituraStreams {
     
 
     public void leerEscribirCarCar() throws RutaInvalida {
-        try (FileReader lectura = new FileReader(pedirRuta("entrada"));
+        try (FileReader entrada = new FileReader(pedirRuta("entrada"));
              FileWriter salida = new FileWriter(pedirRuta("salida"))) {
     
             int c = 0;
@@ -68,7 +68,7 @@ public class LecturaEscrituraStreams {
             salida.write(campos[i]);
     
             while (c != -1) {
-                c = lectura.read();
+                c = entrada.read();
                 if (c != -1 && c != '#' && c != '{') {
                     if (c == '\n') {
                         salida.write(' ');
